@@ -1,13 +1,22 @@
 section .text
     global efi_main
-    extern Print, SetVariable, GetVariable
+    extern Print, SetVariable, GetVariable, SecureBootBypass, PatchMemory, AntiDetection, HideProcess, AntiDebugging, KernelPatch, VirtualMachineBypass
 
 efi_main:
-    ; UEFI 초기화
+    ; Initialize UEFI
     mov rdi, message_init
     call Print
 
-    ; 사용자 입력 받기 (부트 모드 선택)
+    ; Execute security bypass functions
+    call SecureBootBypass
+    call AntiDetection
+    call PatchMemory
+    call HideProcess
+    call AntiDebugging
+    call KernelPatch
+    call VirtualMachineBypass
+
+    ; Get user input (boot mode selection)
     mov rdi, prompt_message
     call Print
     call get_input
@@ -35,52 +44,52 @@ randomized_boot:
     ret
 
 spoof_hardware:
-    ; SMBIOS 스푸핑
+    ; Spoof SMBIOS
     mov rdi, smbios_var
     mov rsi, spoofed_manufacturer
     mov rdx, spoofed_product
     mov rcx, spoofed_serial
     call SetVariable
     
-    ; MAC 주소 스푸핑
+    ; Spoof MAC address
     mov rdi, mac_var
     mov rsi, spoofed_mac
     call SetVariable
     
-    ; CPU ID 스푸핑
+    ; Spoof CPU ID
     mov rdi, cpu_var
     mov rsi, spoofed_cpu
     call SetVariable
     
-    ; HDD/SSD 시리얼 넘버 스푸핑
+    ; Spoof HDD/SSD serial number
     mov rdi, disk_var
     mov rsi, spoofed_disk_serial
     call SetVariable
     
-    ; RAM 정보 스푸핑
+    ; Spoof RAM information
     mov rdi, ram_var
     mov rsi, spoofed_ram
     call SetVariable
     
-    ; USB 정보 스푸핑
+    ; Spoof USB device information
     mov rdi, usb_var
     mov rsi, spoofed_usb
     call SetVariable
     ret
 
 spoof_hardware_random:
-    ; 랜덤 하드웨어 변경
+    ; Generate random hardware values
     call generate_random_values
     call spoof_hardware
     ret
 
 get_input:
-    ; 사용자 입력 받기 (임시, 확장 필요)
+    ; Get user input (temporary, needs extension)
     mov rax, 1
     ret
 
 generate_random_values:
-    ; 랜덤값 생성 로직 추가
+    ; Generate random values for spoofing
     call randomize_smbios
     call randomize_mac
     call randomize_cpu
@@ -90,27 +99,100 @@ generate_random_values:
     ret
 
 randomize_smbios:
-    ; SMBIOS 랜덤 제조사 및 제품명 생성
+    ; Generate random SMBIOS manufacturer and product name
+    mov rdi, smbios_var
+    call GetVariable
+    mov rsi, random_smbios
+    call SetVariable
     ret
 
 randomize_mac:
-    ; 랜덤 MAC 주소 생성
+    ; Generate random MAC address
+    mov rdi, mac_var
+    call GetVariable
+    mov rsi, random_mac
+    call SetVariable
     ret
 
 randomize_cpu:
-    ; 랜덤 CPU ID 생성
+    ; Generate random CPU ID
+    mov rdi, cpu_var
+    call GetVariable
+    mov rsi, random_cpu
+    call SetVariable
     ret
 
 randomize_disk:
-    ; 랜덤 디스크 시리얼 넘버 생성
+    ; Generate random disk serial number
+    mov rdi, disk_var
+    call GetVariable
+    mov rsi, random_disk
+    call SetVariable
     ret
 
 randomize_ram:
-    ; 랜덤 RAM 제조사 및 크기 생성
+    ; Generate random RAM manufacturer and size
+    mov rdi, ram_var
+    call GetVariable
+    mov rsi, random_ram
+    call SetVariable
     ret
 
 randomize_usb:
-    ; 랜덤 USB 장치 정보 생성
+    ; Generate random USB device information
+    mov rdi, usb_var
+    call GetVariable
+    mov rsi, random_usb
+    call SetVariable
+    ret
+
+SecureBootBypass:
+    ; Bypass Secure Boot by modifying NVRAM variables
+    mov rdi, secure_boot_var
+    mov rsi, disabled_value
+    call SetVariable
+    ret
+
+PatchMemory:
+    ; Patch anti-cheat detection memory regions
+    mov rdi, ac_memory_region
+    mov rsi, patched_code
+    call SetVariable
+    ret
+
+AntiDetection:
+    ; Bypass anti-cheat detection methods
+    mov rdi, ac_detection_var
+    mov rsi, bypass_value
+    call SetVariable
+    ret
+
+HideProcess:
+    ; Hide running cheat processes from detection
+    mov rdi, process_list
+    mov rsi, hidden_flag
+    call SetVariable
+    ret
+
+AntiDebugging:
+    ; Prevent debugging tools from analyzing process
+    mov rdi, debug_flags
+    mov rsi, disabled_value
+    call SetVariable
+    ret
+
+KernelPatch:
+    ; Patch kernel functions to disable hardware tracking
+    mov rdi, kernel_hooks
+    mov rsi, patched_kernel
+    call SetVariable
+    ret
+
+VirtualMachineBypass:
+    ; Bypass virtual machine detection to prevent tracing
+    mov rdi, vm_detection_var
+    mov rsi, bypass_value
+    call SetVariable
     ret
 
 section .data
@@ -136,3 +218,21 @@ spoofed_disk_serial db "RND-DISK-1234", 0
 spoofed_ram db "RND-RAM-32GB", 0
 spoofed_usb db "RND-USB-Device", 0
 
+secure_boot_var db "SecureBoot", 0
+disabled_value db "0", 0
+ac_memory_region db "AntiCheatMem", 0
+patched_code db "NOP", 0
+ac_detection_var db "ACDetect", 0
+bypass_value db "Bypassed", 0
+process_list db "ProcessList", 0
+hidden_flag db "Hidden", 0
+debug_flags db "DebugProtection", 0
+kernel_hooks db "KernelHooks", 0
+patched_kernel db "Patched", 0
+vm_detection_var db "VMD", 0
+random_smbios db "Random-Manufacturer", 0
+random_mac db "AA:BB:CC:DD:EE:FF", 0
+random_cpu db "Random-CPU-ID", 0
+random_disk db "RND-DISK-5678", 0
+random_ram db "RND-RAM-16GB", 0
+random_usb db "RND-USB-1234", 0
